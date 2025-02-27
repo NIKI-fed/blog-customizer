@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
-// import { RadioGroup } from 'src/ui/radio-group';
-// import { Select } from 'src/ui/select';
-// import { Text } from 'src/ui/text';
+import { RadioGroup } from 'src/ui/radio-group';
+import { Select } from 'src/ui/select';
+import { Text } from 'src/ui/text';
 import {
-	// fontFamilyOptions,
-	// fontColors,
-	// backgroundColors,
-	// contentWidthArr,
-	// fontSizeOptions,
+	fontFamilyOptions,
+	fontColors,
+	backgroundColors,
+	contentWidthArr,
+	fontSizeOptions,
 	defaultArticleState,
 	ArticleStateType,
 } from 'src/constants/articleProps';
@@ -29,7 +29,7 @@ export const ArticleParamsForm = ({ setChange = () => {} }: formProps) => {
 	const sidebarRef = useRef<HTMLElement>(null);
 
 	// Функция для отображения/скрытия сайдбара
-	const toggleState = () => {
+	const toggleOpen = () => {
 		setOpen(!open);
 	};
 
@@ -53,6 +53,15 @@ export const ArticleParamsForm = ({ setChange = () => {} }: formProps) => {
 	}, []);
 
 	// Функция для обновления состояния формы при вводе данных
+	const handleChange = <T extends keyof ArticleStateType>(
+		key: T,
+		value: ArticleStateType[T]
+	) => {
+		setSidebarState((prevState) => ({
+			...prevState,
+			[key]: value,
+		}));
+	};
 
 	// Фунция reset для сброса формы
 	const resetForm = () => {
@@ -60,15 +69,18 @@ export const ArticleParamsForm = ({ setChange = () => {} }: formProps) => {
 	};
 
 	// Функция для подтверждения данных, введённых в форму
-	// const submitData = (evt: React.FormEvent) => {
-	// 	evt.preventDefault();
-	// 	setChange(sidebarState);
-	// }
+	const submitData = (evt: React.FormEvent) => {
+		evt.preventDefault();
+		setChange(sidebarState);
+	};
 
 	return (
 		<>
-			<ArrowButton isOpen={open} onClick={toggleState} />
-			<aside className={styles.container}>
+			<ArrowButton isOpen={open} onClick={toggleOpen} />
+			<aside
+				//className={styles.container}>
+				className={`${styles.container} ${open ? styles.container_open : ''}`}
+				ref={sidebarRef}>
 				<form className={styles.form}>
 					<div className={styles.bottomContainer}>
 						<Button title='Сбросить' htmlType='reset' type='clear' />
