@@ -5,27 +5,29 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Select } from 'src/ui/select';
 import { Text } from 'src/ui/text';
 import {
+	ArticleStateType,
+	OptionType,
+	defaultArticleState,
 	fontFamilyOptions,
+	fontSizeOptions,
 	fontColors,
 	backgroundColors,
 	contentWidthArr,
-	fontSizeOptions,
-	defaultArticleState,
-	ArticleStateType,
 } from 'src/constants/articleProps';
 import styles from './ArticleParamsForm.module.scss';
 
-type formProps = {
-	setChange?: (newState: ArticleStateType) => void;
+export type formProps = {
+	setChange: (value: ArticleStateType) => void;
 };
 
-export const ArticleParamsForm = ({ setChange = () => {} }: formProps) => {
+export const ArticleParamsForm = ({ setChange }: formProps) => {
 	// Хук для управления открытием/закрытием сайдбара
 	const [open, setOpen] = useState(false);
 
-	// Хук состояния сайдбара, инициализируем значения по умолчанию
+	// Хук для хранения текущего состояния сайдбара, инициализируем значения по умолчанию
 	const [sidebarState, setSidebarState] = useState(defaultArticleState);
 
+	// Создаём ссылку на элемент DOM сайта
 	const sidebarRef = useRef<HTMLElement>(null);
 
 	// Функция для отображения/скрытия сайдбара
@@ -52,24 +54,24 @@ export const ArticleParamsForm = ({ setChange = () => {} }: formProps) => {
 		};
 	}, []);
 
-	// Функция для обновления состояния формы при вводе данных
-	const handleChange = <T extends keyof ArticleStateType>(
-		key: T,
-		value: ArticleStateType[T]
-	) => {
-		setSidebarState((prevState) => ({
-			...prevState,
-			[key]: value,
-		}));
+	// Функция change для обновления состояния формы при вводе данных
+	const handleChange = (key: string) => {
+		return (value: OptionType) => {
+			setSidebarState((prevState) => ({
+				...prevState, // копируем все ключи и значения из предыдущего состояния
+				[key]: value, // обновляем все свойтва состояния
+			}));
+		};
 	};
 
 	// Фунция reset для сброса формы
-	const resetForm = () => {
+	const handleReset = () => {
 		setSidebarState(defaultArticleState);
+		setChange(defaultArticleState);
 	};
 
-	// Функция для подтверждения данных, введённых в форму
-	const submitData = (evt: React.FormEvent) => {
+	// Функция submit для применения данных, введённых в форму
+	const handleSubmit = (evt: React.FormEvent) => {
 		evt.preventDefault();
 		setChange(sidebarState);
 	};
@@ -78,10 +80,59 @@ export const ArticleParamsForm = ({ setChange = () => {} }: formProps) => {
 		<>
 			<ArrowButton isOpen={open} onClick={toggleOpen} />
 			<aside
-				//className={styles.container}>
 				className={`${styles.container} ${open ? styles.container_open : ''}`}
 				ref={sidebarRef}>
-				<form className={styles.form}>
+				<form
+					className={styles.form}
+					onSubmit={handleSubmit}
+					onReset={handleReset}>
+					{/* Заголовок сайдбара */}
+					<Text as={'h2'} size={31} weight={800} uppercase={true}>
+						Задайте параметры
+					</Text>
+
+					{/* Выбор шрифта */}
+					<Select
+						title='Шрифт'
+						options={fontFamilyOptions} // Список выбора шрифта
+						selected={sidebarState.fontFamilyOption} // Выбранный шрифт
+						onChange={handleChange('fontFamilyOption')} // Функция обработки выбора шрифта
+					/>
+
+					{/* Выбор размера шрифта с помощью радиокнопок*/}
+					<RadioGroup
+						title='Размер шрифта'
+						name='fontSize'
+						options={fontSizeOptions} // Варианты размеров шрифта на радиокнопках
+						selected={sidebarState.fontSizeOption} // Выбранный размер шрифта
+						onChange={handleChange('fontSizeOption')} // Функция обработки размера шрифта
+					/>
+
+					{/* Выбор цвета шрифта */}
+					<Select
+						title='Цвет шрифта'
+						options={fontColors} // Варианты цвета шрифта
+						selected={sidebarState.fontColor} // Выбранный цвет шрифта
+						onChange={handleChange('fontColor')} // Функция обработки цвета шрифта
+					/>
+
+					{/* Выбор цвета фона */}
+					<Select
+						title='Цвет фона'
+						options={backgroundColors} // Варианты цвета фона
+						selected={sidebarState.backgroundColor} // Выбранный цвет фона
+						onChange={handleChange('backgroundColor')} // Функция обработки цвета фона
+					/>
+
+					{/* Выбор ширины контента */}
+					<Select
+						title='Ширина контента'
+						options={contentWidthArr} // Варианты ширины контента
+						selected={sidebarState.contentWidth} // Выбранная ширина контента
+						onChange={handleChange('contentWidth')} // Функция обработки ширины контента
+					/>
+
+					{/* Кнопки очистки и подтверждения форм */}
 					<div className={styles.bottomContainer}>
 						<Button title='Сбросить' htmlType='reset' type='clear' />
 						<Button title='Применить' htmlType='submit' type='apply' />
