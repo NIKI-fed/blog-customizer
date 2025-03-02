@@ -15,6 +15,7 @@ import {
 	contentWidthArr,
 } from 'src/constants/articleProps';
 import styles from './ArticleParamsForm.module.scss';
+import clsx from 'clsx';
 
 export type formProps = {
 	setChange: (value: ArticleStateType) => void;
@@ -22,17 +23,17 @@ export type formProps = {
 
 export const ArticleParamsForm = ({ setChange }: formProps) => {
 	// Хук для управления открытием/закрытием сайдбара
-	const [open, setOpen] = useState(false);
+	const [isFormOpen, setOpen] = useState(false);
 
-	// Хук для хранения текущего состояния сайдбара, инициализируем значения по умолчанию
-	const [sidebarState, setSidebarState] = useState(defaultArticleState);
+	// Хук для хранения текущего состояния форм, инициализируем значения по умолчанию
+	const [formState, setFormState] = useState(defaultArticleState);
 
 	// Создаём ссылку на элемент DOM сайта
 	const sidebarRef = useRef<HTMLElement>(null);
 
 	// Функция для отображения/скрытия сайдбара
 	const toggleOpen = () => {
-		setOpen(!open);
+		setOpen(!isFormOpen);
 	};
 
 	// Функция закрытия сайдбара при клике вне сайдбара
@@ -45,19 +46,20 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 				setOpen(false);
 			}
 		};
-		// Добавляем обработчик для клика вне сайдбара
-		document.addEventListener('mousedown', clickOutside);
-
+		// Добавляем обработчик для клика вне сайдбара (только при открытом сайдбаре)
+		if (isFormOpen) {
+			document.addEventListener('mousedown', clickOutside);
+		}
 		// Снимаем обработчик клика при размонтировании компонента
 		return () => {
 			document.removeEventListener('mousedown', clickOutside);
 		};
-	}, []);
+	}, [isFormOpen]);
 
 	// Функция change для обновления состояния формы при вводе данных
-	const handleChange = (key: string) => {
+	const handleChange = (key: keyof ArticleStateType) => {
 		return (value: OptionType) => {
-			setSidebarState((prevState) => ({
+			setFormState((prevState) => ({
 				...prevState, // копируем все ключи и значения из предыдущего состояния
 				[key]: value, // обновляем все свойтва состояния
 			}));
@@ -66,21 +68,24 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 
 	// Фунция reset для сброса формы
 	const handleReset = () => {
-		setSidebarState(defaultArticleState);
+		setFormState(defaultArticleState);
 		setChange(defaultArticleState);
 	};
 
 	// Функция submit для применения данных, введённых в форму
-	const handleSubmit = (evt: React.FormEvent) => {
+	const handleSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
 		evt.preventDefault();
-		setChange(sidebarState);
+		setChange(formState);
 	};
 
 	return (
 		<>
-			<ArrowButton isOpen={open} onClick={toggleOpen} />
+			<ArrowButton isOpen={isFormOpen} onClick={toggleOpen} />
 			<aside
-				className={`${styles.container} ${open ? styles.container_open : ''}`}
+				className={clsx(
+					styles.container,
+					isFormOpen ? styles.container_open : ''
+				)}
 				ref={sidebarRef}>
 				<form
 					className={styles.form}
@@ -95,7 +100,7 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 					<Select
 						title='Шрифт'
 						options={fontFamilyOptions} // Список выбора шрифта
-						selected={sidebarState.fontFamilyOption} // Выбранный шрифт
+						selected={formState.fontFamilyOption} // Выбранный шрифт
 						onChange={handleChange('fontFamilyOption')} // Функция обработки выбора шрифта
 					/>
 
@@ -104,7 +109,7 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 						title='Размер шрифта'
 						name='fontSize'
 						options={fontSizeOptions} // Варианты размеров шрифта на радиокнопках
-						selected={sidebarState.fontSizeOption} // Выбранный размер шрифта
+						selected={formState.fontSizeOption} // Выбранный размер шрифта
 						onChange={handleChange('fontSizeOption')} // Функция обработки размера шрифта
 					/>
 
@@ -112,7 +117,7 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 					<Select
 						title='Цвет шрифта'
 						options={fontColors} // Варианты цвета шрифта
-						selected={sidebarState.fontColor} // Выбранный цвет шрифта
+						selected={formState.fontColor} // Выбранный цвет шрифта
 						onChange={handleChange('fontColor')} // Функция обработки цвета шрифта
 					/>
 
@@ -120,7 +125,7 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 					<Select
 						title='Цвет фона'
 						options={backgroundColors} // Варианты цвета фона
-						selected={sidebarState.backgroundColor} // Выбранный цвет фона
+						selected={formState.backgroundColor} // Выбранный цвет фона
 						onChange={handleChange('backgroundColor')} // Функция обработки цвета фона
 					/>
 
@@ -128,7 +133,7 @@ export const ArticleParamsForm = ({ setChange }: formProps) => {
 					<Select
 						title='Ширина контента'
 						options={contentWidthArr} // Варианты ширины контента
-						selected={sidebarState.contentWidth} // Выбранная ширина контента
+						selected={formState.contentWidth} // Выбранная ширина контента
 						onChange={handleChange('contentWidth')} // Функция обработки ширины контента
 					/>
 
